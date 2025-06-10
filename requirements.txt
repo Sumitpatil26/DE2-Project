@@ -1,0 +1,6 @@
+streamlit
+folium
+streamlit-folium
+pandas
+google-cloud-storage
+streamlit-autorefresh
