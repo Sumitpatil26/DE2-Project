@@ -67,7 +67,7 @@ if df is None or df_raw is None:
     st.error("Aggregated or raw data not found!")
 else:
     # Sidebar navigation
-    page = st.sidebar.radio("Select Visualization", ["Fuel Station Map", "Line Chart", "Brand Market Share"])
+    page = st.sidebar.radio("Select Visualization", ["Fuel Station Map", "Average Fuel Prices for Main 9 Cities", "Brand Market Share"])
 
     if page == "Fuel Station Map":
         fuel_type = st.sidebar.selectbox("Select fuel type:", ['e5', 'diesel', 'e10'])
@@ -125,7 +125,7 @@ else:
 
         st_folium(m, width=700, height=500)
 
-    elif page == "Line Chart":
+    elif page == "Average Fuel Prices for Main 9 Cities":
         st.header("Average Fuel Prices for Main 9 Cities")
         st.write("""
         This line chart shows average prices of Diesel, E5, and E10 for selected main cities.  
