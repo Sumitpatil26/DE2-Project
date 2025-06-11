@@ -67,9 +67,9 @@ if df is None or df_raw is None:
     st.error("Aggregated or raw data not found!")
 else:
     # Sidebar navigation
-    page = st.sidebar.radio("Select Visualization", ["Map", "Line Chart", "Brand Market Share"])
+    page = st.sidebar.radio("Select Visualization", ["Fuel Station Map", "Line Chart", "Brand Market Share"])
 
-    if page == "Map":
+    if page == "Fuel Station Map":
         fuel_type = st.sidebar.selectbox("Select fuel type:", ['e5', 'diesel', 'e10'])
         fuel_type_name = {'e5': 'E5', 'diesel': 'Diesel', 'e10': 'E10'}[fuel_type]
 
