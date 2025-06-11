@@ -5,3 +5,6 @@ pandas
 google-cloud-storage
 streamlit-autorefresh
 plotly
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
