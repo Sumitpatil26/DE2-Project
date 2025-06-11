@@ -4,3 +4,4 @@ streamlit-folium
 pandas
 google-cloud-storage
 streamlit-autorefresh
+plotly
