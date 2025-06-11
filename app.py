@@ -4,8 +4,10 @@ from streamlit_folium import st_folium
 import pandas as pd
 from google.cloud import storage
 import io
+import re
 from streamlit_autorefresh import st_autorefresh
 import plotly.express as px
+from google.oauth2 import service_account
 
 # Configuration
 BUCKET_NAME = "fuel-prices-bucket"
@@ -27,7 +29,10 @@ count = st_autorefresh(interval=300000, limit=None, key="datarefresh")
 
 @st.cache_resource
 def get_storage_client():
-    return storage.Client()
+    key_dict = st.secrets["gcp_service_account"]
+    credentials = service_account.Credentials.from_service_account_info(key_dict)
+    client = storage.Client(credentials=credentials)
+    return client
 
 @st.cache_data(ttl=300)
 def load_latest_aggregated_csv():
@@ -37,7 +42,6 @@ def load_latest_aggregated_csv():
     if not csv_blobs:
         return None
 
-    # Pick blob with latest upload time
     latest_blob = max(csv_blobs, key=lambda b: b.updated)
 
     content = latest_blob.download_as_text()
@@ -65,8 +69,6 @@ df_raw = load_latest_raw_csv()
 if df is None or df_raw is None:
     st.error("Aggregated or raw data not found!")
 else:
-    # Removed timestamp display
-
     # Fuel type selector
     fuel_type = st.selectbox("Select fuel type to display on map and chart:", options=['e5', 'diesel', 'e10'], index=0)
     fuel_type_name = {'e5': 'E5', 'diesel': 'Diesel', 'e10': 'E10'}[fuel_type]
