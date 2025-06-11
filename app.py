@@ -9,7 +9,7 @@ from streamlit_autorefresh import st_autorefresh
 import plotly.express as px
 from google.oauth2 import service_account
 
-# Config
+# Configuration
 BUCKET_NAME = "fuel-prices-bucket"
 AGGREGATED_FOLDER = "aggregated/"
 
@@ -24,13 +24,15 @@ price_ranges = {
     'e10': {'green': 'Below €1.50 (cheap)', 'orange': '€1.50 to €1.60 (moderate)', 'red': 'Above €1.60 (expensive)'},
 }
 
+# Auto-refresh page every 5 minutes
 count = st_autorefresh(interval=300000, limit=None, key="datarefresh")
 
 @st.cache_resource
 def get_storage_client():
     key_dict = st.secrets["gcp_service_account"]
     credentials = service_account.Credentials.from_service_account_info(key_dict)
-    return storage.Client(credentials=credentials)
+    client = storage.Client(credentials=credentials)
+    return client
 
 @st.cache_data(ttl=300)
 def load_latest_aggregated_csv():
@@ -41,7 +43,8 @@ def load_latest_aggregated_csv():
         return None
     latest_blob = max(csv_blobs, key=lambda b: b.updated)
     content = latest_blob.download_as_text()
-    return pd.read_csv(io.StringIO(content))
+    df = pd.read_csv(io.StringIO(content))
+    return df
 
 @st.cache_data(ttl=300)
 def load_latest_raw_csv():
@@ -52,7 +55,8 @@ def load_latest_raw_csv():
         return None
     latest_blob = max(csv_blobs, key=lambda b: b.updated)
     content = latest_blob.download_as_text()
-    return pd.read_csv(io.StringIO(content))
+    df_raw = pd.read_csv(io.StringIO(content))
+    return df_raw
 
 st.title("Fuel Prices Dashboard - Baden-Württemberg")
 
@@ -63,13 +67,14 @@ if df is None or df_raw is None:
     st.error("Aggregated or raw data not found!")
 else:
     # Sidebar navigation
-    page = st.sidebar.radio("Select Visualization", ("Map", "Line Chart", "Brand Market Share"))
+    page = st.sidebar.radio("Select Visualization", ["Map", "Line Chart", "Brand Market Share"])
 
     if page == "Map":
         fuel_type = st.sidebar.selectbox("Select fuel type:", ['e5', 'diesel', 'e10'])
         fuel_type_name = {'e5': 'E5', 'diesel': 'Diesel', 'e10': 'E10'}[fuel_type]
 
         st.header(f"Fuel Stations Map - {fuel_type_name}")
+
         st.markdown(f"""
         **Price Ranges for {fuel_type_name}:**
 
@@ -104,6 +109,7 @@ else:
                 return 'gray'
 
         m = folium.Map(location=[48.7, 9.1], zoom_start=8)
+
         for _, row in df.iterrows():
             price = row.get(fuel_type)
             if pd.notna(price) and 'lat' in row and 'lng' in row and pd.notna(row['lat']) and pd.notna(row['lng']):
@@ -116,6 +122,7 @@ else:
                     fill_opacity=0.7,
                     popup=popup
                 ).add_to(m)
+
         st_folium(m, width=700, height=500)
 
     elif page == "Line Chart":
